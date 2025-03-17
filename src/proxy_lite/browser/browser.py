@@ -82,10 +82,13 @@ class BrowserSession:
         viewport_width: int = 1280,
         viewport_height: int = 720,
         headless: bool = True,
+        cdp_url: str | None = None
     ):
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
         self.headless = headless
+        self.cdp_url = cdp_url
+        
         self.playwright: Playwright | None = None
         self.browser: Browser | None = None
         self.context: BrowserContext | None = None
@@ -100,7 +103,11 @@ class BrowserSession:
         self._exit_stack = AsyncExitStack()
         self.playwright = await async_playwright().start()
 
-        self.browser = await self.playwright.chromium.launch(headless=self.headless)
+        if self.cdp_url is not None:
+            self.browser = await self.playwright.chromium.connect_over_cdp(self.cdp_url)
+        else:
+            self.browser = await self.playwright.chromium.launch(headless=self.headless)
+
         self.context = await self.browser.new_context(
             viewport={"width": self.viewport_width, "height": self.viewport_height},
         )

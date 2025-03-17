@@ -27,6 +27,7 @@ class WebBrowserEnvironmentConfig(BaseEnvironmentConfig):
     viewport_height: int = 720
     browserbase_timeout: int = 7200
     headless: bool = True
+    cdp_url: str | None = None
     keep_original_image: bool = False
     no_pois_in_image: bool = False
 
@@ -46,6 +47,7 @@ class WebBrowserEnvironment(BaseEnvironment):
             viewport_width=self.config.viewport_width,
             viewport_height=self.config.viewport_height,
             headless=self.config.headless,
+            cdp_url=self.config.cdp_url
         )
         await self.browser.__aenter__()
         # Initialize other resources if necessary
