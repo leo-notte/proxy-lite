@@ -11,6 +11,7 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright_stealth import StealthConfig, stealth_async
 from pydantic import Field
 from tenacity import before_sleep_log, retry, stop_after_delay, wait_exponential
+from typing_extensions import TypedDict
 
 from proxy_lite.browser.bounding_boxes import POI, BoundingBox, Point, annotate_bounding_boxes
 from proxy_lite.logger import logger
@@ -75,6 +76,11 @@ def element_as_text(
             return f"- [{mark_id}] <{tag}{attributes}/>"
     return f"- [{mark_id}] <{tag}{attributes}>{text}</{tag}>"
 
+class ProxySettings(TypedDict, total=False):
+    server: str
+    bypass: str | None
+    username: str | None
+    password: str | None
 
 class BrowserSession:
     def __init__(
@@ -82,12 +88,14 @@ class BrowserSession:
         viewport_width: int = 1280,
         viewport_height: int = 720,
         headless: bool = True,
-        cdp_url: str | None = None
+        cdp_url: str | None = None,
+        proxy: ProxySettings | None = None,
     ):
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
         self.headless = headless
         self.cdp_url = cdp_url
+        self.proxy = proxy
         
         self.playwright: Playwright | None = None
         self.browser: Browser | None = None
@@ -109,7 +117,7 @@ class BrowserSession:
             self.browser = await self.playwright.chromium.launch(headless=self.headless)
 
         self.context = await self.browser.new_context(
-            viewport={"width": self.viewport_width, "height": self.viewport_height},
+            viewport={"width": self.viewport_width, "height": self.viewport_height}, proxy=self.proxy
         )
         await self.context.new_page()
         self.context.set_default_timeout(60_000)

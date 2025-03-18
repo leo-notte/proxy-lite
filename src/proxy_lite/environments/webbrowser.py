@@ -2,7 +2,7 @@ import base64
 from functools import cached_property
 from typing import Any, Literal, Optional, Self
 
-from proxy_lite.browser.browser import BrowserSession
+from proxy_lite.browser.browser import BrowserSession, ProxySettings
 from proxy_lite.environments.environment_base import (
     Action,
     BaseEnvironment,
@@ -28,6 +28,7 @@ class WebBrowserEnvironmentConfig(BaseEnvironmentConfig):
     browserbase_timeout: int = 7200
     headless: bool = True
     cdp_url: str | None = None
+    proxy: ProxySettings | None = None
     keep_original_image: bool = False
     no_pois_in_image: bool = False
 
@@ -47,7 +48,8 @@ class WebBrowserEnvironment(BaseEnvironment):
             viewport_width=self.config.viewport_width,
             viewport_height=self.config.viewport_height,
             headless=self.config.headless,
-            cdp_url=self.config.cdp_url
+            cdp_url=self.config.cdp_url,
+            proxy=self.config.proxy
         )
         await self.browser.__aenter__()
         # Initialize other resources if necessary
